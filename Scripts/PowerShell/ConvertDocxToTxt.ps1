@@ -4,6 +4,7 @@
 
 param (
     [string]$SourceDir = ".",
+    [string[]]$SourceFiles,
     [switch]$DeleteOriginal = $false,
     [switch]$Backup = $true,
     [switch]$Silent = $false
@@ -12,18 +13,6 @@ param (
 # Set script execution path to current script directory
 $scriptPath = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 Set-Location -Path $scriptPath
-
-# Set source directory path (handle both relative and absolute paths)
-$docxDir = $SourceDir
-if (-not [System.IO.Path]::IsPathRooted($SourceDir)) {
-    $docxDir = Join-Path -Path $scriptPath -ChildPath $SourceDir
-}
-
-# Check if source directory exists
-if (-not (Test-Path -Path $docxDir -PathType Container)) {
-    Write-Error "Directory $SourceDir does not exist: $docxDir"
-    exit 1
-}
 
 # Initialize counters
 $totalFiles = 0
@@ -53,17 +42,59 @@ catch {
     exit 1
 }
 
-# Recursively get all .docx files
-$docxFiles = Get-ChildItem -Path $docxDir -Filter "*.docx" -Recurse -File
+# Get files to process
+$docxFiles = @()
+if ($SourceFiles) {
+    foreach ($file in $SourceFiles) {
+        # Handle both relative and absolute paths
+        $filePath = $file
+        if (-not [System.IO.Path]::IsPathRooted($file)) {
+            $filePath = Join-Path -Path $scriptPath -ChildPath $file
+        }
+        
+        if (Test-Path -Path $filePath -PathType Leaf) {
+            if ($filePath -like "*.docx") {
+                $docxFiles += Get-Item -Path $filePath
+            }
+            else {
+                Write-Warning "Skipped non-DOCX file: $file"
+            }
+        }
+        else {
+            Write-Warning "File not found: $file"
+        }
+    }
+}
+else {
+    # Set source directory path (handle both relative and absolute paths)
+    $docxDir = $SourceDir
+    if (-not [System.IO.Path]::IsPathRooted($SourceDir)) {
+        $docxDir = Join-Path -Path $scriptPath -ChildPath $SourceDir
+    }
+
+    # Check if source directory exists
+    if (-not (Test-Path -Path $docxDir -PathType Container)) {
+        Write-Error "Directory $SourceDir does not exist: $docxDir"
+        exit 1
+    }
+
+    # Recursively get all .docx files
+    $docxFiles = Get-ChildItem -Path $docxDir -Filter "*.docx" -Recurse -File
+}
 
 # Show the number of files found
 $totalFiles = $docxFiles.Count
-Write-Host "Found $totalFiles .docx files in $SourceDir directory and its subdirectories" -ForegroundColor Yellow
+if ($SourceFiles) {
+    Write-Host "Found $totalFiles .docx files from specified source files" -ForegroundColor Yellow
+}
+else {
+    Write-Host "Found $totalFiles .docx files in $SourceDir directory and its subdirectories" -ForegroundColor Yellow
+}
 
 # Create a log file to record conversion results
 $logFile = Join-Path -Path $scriptPath -ChildPath "DocxToTxtConversion.log"
 "Conversion started at $(Get-Date)" | Out-File -FilePath $logFile
-"Parameters: SourceDir=$SourceDir, DeleteOriginal=$DeleteOriginal, Backup=$Backup, Silent=$Silent" | Out-File -FilePath $logFile -Append
+"Parameters: SourceDir=$SourceDir, SourceFiles=$($SourceFiles -join ','), DeleteOriginal=$DeleteOriginal, Backup=$Backup, Silent=$Silent" | Out-File -FilePath $logFile -Append
 
 # Iterate through each .docx file for conversion
 foreach ($file in $docxFiles) {

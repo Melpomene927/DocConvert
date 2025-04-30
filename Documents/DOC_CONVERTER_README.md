@@ -4,6 +4,10 @@
 1. 將 Microsoft Word 舊格式文件 (.doc) 批量轉換為新格式 (.docx)
 2. 將 Microsoft Word 文件 (.docx) 批量轉換為純文字檔案 (.txt)
 
+每種轉換都支援兩種處理模式：
+- 目錄模式：處理指定目錄下的所有相關檔案
+- 檔案模式：只處理指定的特定檔案
+
 ## 系統需求
 
 - Windows 作業系統
@@ -31,7 +35,10 @@
 
 4. 如果選擇選項7，按提示輸入以下參數：
    - 轉換類型：選擇1進行DOC轉DOCX，或選擇2進行DOCX轉TXT
-   - 來源目錄：輸入包含要處理檔案的目錄路徑（可以是絕對路徑或相對路徑）
+   - 處理模式：選擇1處理目錄，或選擇2處理特定檔案
+   - 來源目錄或檔案：
+     - 如果選擇處理目錄：輸入包含要處理檔案的目錄路徑
+     - 如果選擇處理檔案：輸入要處理的檔案路徑，多個檔案用逗號分隔
    - 是否刪除原始檔案：輸入y/n
    - 是否建立備份：輸入y/n
    - 是否使用安靜模式：輸入y/n
@@ -43,23 +50,35 @@
 3. 執行以下命令:
 
    ```powershell
-   # DOC 轉 DOCX - 基本用法（轉換當前目錄中的檔案）
+   # DOC 轉 DOCX - 目錄模式
+   ## 基本用法（轉換當前目錄中的檔案）
    powershell -ExecutionPolicy Bypass -File ConvertDocToDocx.ps1
    
-   # DOC 轉 DOCX - 指定不同的源目錄（使用相對路徑）
+   ## 指定不同的源目錄（使用相對路徑）
    powershell -ExecutionPolicy Bypass -File ConvertDocToDocx.ps1 -SourceDir "File Description_PY"
    
-   # DOCX 轉 TXT - 基本用法（轉換當前目錄中的檔案）
+   ## 指定特定檔案
+   powershell -ExecutionPolicy Bypass -File ConvertDocToDocx.ps1 -SourceFiles "file1.doc", "file2.doc"
+   
+   # DOCX 轉 TXT - 目錄模式
+   ## 基本用法（轉換當前目錄中的檔案）
    powershell -ExecutionPolicy Bypass -File ConvertDocxToTxt.ps1
    
-   # DOCX 轉 TXT - 指定不同的源目錄
+   ## 指定不同的源目錄
    powershell -ExecutionPolicy Bypass -File ConvertDocxToTxt.ps1 -SourceDir "FileLayout_PY"
    
-   # 轉換後刪除原始檔案
+   ## 指定特定檔案
+   powershell -ExecutionPolicy Bypass -File ConvertDocxToTxt.ps1 -SourceFiles "document1.docx", "document2.docx"
+   
+   # 其他選項（適用於兩種轉換）
+   ## 轉換後刪除原始檔案
    powershell -ExecutionPolicy Bypass -File ConvertDocxToTxt.ps1 -DeleteOriginal
    
-   # 不建立備份
+   ## 不建立備份
    powershell -ExecutionPolicy Bypass -File ConvertDocxToTxt.ps1 -Backup:$false
+   
+   ## 組合使用多個選項
+   powershell -ExecutionPolicy Bypass -File ConvertDocxToTxt.ps1 -SourceFiles "doc1.docx", "doc2.docx" -DeleteOriginal -Backup:$false
    ```
 
 ## 處理特殊情況
@@ -72,6 +91,11 @@ Windows目錄連結（Directory Junction）需要特別處理：
    ```powershell
    # 假設DOC\FileLayout_PY是指向D:\ARTHUR\ARTHPY\Doc\FileLayout的連結
    powershell -ExecutionPolicy Bypass -File ConvertDocToDocx.ps1 -SourceDir "D:\ARTHUR\ARTHPY\Doc\FileLayout"
+   ```
+
+2. 對於特定檔案的處理，建議使用完整路徑：
+   ```powershell
+   powershell -ExecutionPolicy Bypass -File ConvertDocToDocx.ps1 -SourceFiles "D:\ARTHUR\ARTHPY\Doc\FileLayout\file1.doc"
    ```
 
 ### 中文檔案路徑處理
@@ -93,10 +117,12 @@ Windows目錄連結（Directory Junction）需要特別處理：
    - 確認指定的路徑是否正確
    - 檢查該路徑下是否確實有要轉換的檔案（注意副檔名大小寫）
    - 如果是目錄連結，嘗試直接指定目標目錄路徑
+   - 使用特定檔案模式時，確保檔案路徑正確且檔案存在
 
 2. **參數錯誤**
    - 確保執行腳本時使用正確的參數語法
    - 確保開關參數（如`-DeleteOriginal`）使用正確的語法
+   - 多個檔案路徑需要用逗號分隔並用引號包圍
 
 3. **轉換失敗**
    - 確保Microsoft Word已正確安裝
@@ -108,22 +134,33 @@ Windows目錄連結（Directory Junction）需要特別處理：
 以下是一些常見使用場景：
 
 1. **標準轉換場景**
-   - 使用批處理檔案選項1或5，或直接執行無參數腳本
+   - 使用批處理檔案選項1或5
+   - 或直接執行無參數腳本
 
-2. **大量檔案轉換**
+2. **特定檔案轉換**
+   - 使用 `-SourceFiles` 參數指定要處理的檔案
+   - 可以同時指定多個檔案
+   ```powershell
+   ConvertDocToDocx.ps1 -SourceFiles "report.doc", "meeting.doc"
+   ```
+
+3. **大量檔案轉換**
+   - 使用目錄模式處理大量檔案
    - 推薦啟用備份功能以確保資料安全
    - 可以使用安靜模式減少輸出
 
-3. **連結目錄處理**
+4. **連結目錄處理**
    - 使用絕對路徑指定實際目標目錄
+   - 或使用特定檔案模式直接指定檔案
 
-4. **空間有限的環境**
+5. **空間有限的環境**
    - 使用`-Backup:$false`選項跳過備份
    - 或使用`-DeleteOriginal`選項在轉換後刪除原始檔案
 
 ## 詳細參數說明
 
 - `-SourceDir`：指定要處理的目錄，預設為 "."（當前目錄）
+- `-SourceFiles`：指定要處理的特定檔案，可接受多個檔案路徑
 - `-DeleteOriginal`：轉換後刪除原始檔案
 - `-Backup`：在執行轉換前建立備份，預設為 $true
 - `-Silent`：減少輸出訊息
@@ -136,6 +173,7 @@ Windows目錄連結（Directory Junction）需要特別處理：
 
 轉換過程的詳細記錄會保存在對應的日誌檔案中，包含：
 - 處理時間
+- 使用的參數
 - 成功轉換的檔案
 - 跳過的檔案
 - 失敗的檔案

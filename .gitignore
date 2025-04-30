@@ -1,2 +1,42 @@
 # SpecStory explanation file
 .specstory/.what-is-this.md
+
+# PowerShell 相關
+*.ps1.log
+*.pshistory
+*.ps1.error
+*.ps1.tmp
+*.psm1.log
+*.psd1.log
+PowerShell/Modules/*
+PowerShell/Logs/*
+
+# Batch 腳本相關
+*.bat.log
+*.cmd.log
+*.tmp
+Batch/Logs/*
+
+# Windows 系統檔案
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# 編輯器暫存檔
+*.swp
+*~
+._*
+.DS_Store
+.vscode/
+.idea/
+
+# 執行時產生的暫存檔案
+temp/
+tmp/
+logs/
+*.log
+*.tmp
+*.temp
+*.bak

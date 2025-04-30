@@ -4,6 +4,7 @@
 
 param (
     [string]$SourceDir = ".",
+    [string[]]$SourceFiles,
     [switch]$DeleteOriginal = $false,
     [switch]$Backup = $true,
     [switch]$Silent = $false
@@ -12,18 +13,6 @@ param (
 # Set script execution path to current script directory
 $scriptPath = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 Set-Location -Path $scriptPath
-
-# Set source directory path (handle both relative and absolute paths)
-$docDir = $SourceDir
-if (-not [System.IO.Path]::IsPathRooted($SourceDir)) {
-    $docDir = Join-Path -Path $scriptPath -ChildPath $SourceDir
-}
-
-# Check if source directory exists
-if (-not (Test-Path -Path $docDir -PathType Container)) {
-    Write-Error "Directory $SourceDir does not exist: $docDir"
-    exit 1
-}
 
 # Initialize counters
 $totalFiles = 0
@@ -53,17 +42,59 @@ catch {
     exit 1
 }
 
-# Recursively get all .doc files
-$docFiles = Get-ChildItem -Path $docDir -Filter "*.doc" -Recurse -File
+# Get files to process
+$docFiles = @()
+if ($SourceFiles) {
+    foreach ($file in $SourceFiles) {
+        # Handle both relative and absolute paths
+        $filePath = $file
+        if (-not [System.IO.Path]::IsPathRooted($file)) {
+            $filePath = Join-Path -Path $scriptPath -ChildPath $file
+        }
+        
+        if (Test-Path -Path $filePath -PathType Leaf) {
+            if ($filePath -like "*.doc") {
+                $docFiles += Get-Item -Path $filePath
+            }
+            else {
+                Write-Warning "Skipped non-DOC file: $file"
+            }
+        }
+        else {
+            Write-Warning "File not found: $file"
+        }
+    }
+}
+else {
+    # Set source directory path (handle both relative and absolute paths)
+    $docDir = $SourceDir
+    if (-not [System.IO.Path]::IsPathRooted($SourceDir)) {
+        $docDir = Join-Path -Path $scriptPath -ChildPath $SourceDir
+    }
+
+    # Check if source directory exists
+    if (-not (Test-Path -Path $docDir -PathType Container)) {
+        Write-Error "Directory $SourceDir does not exist: $docDir"
+        exit 1
+    }
+
+    # Recursively get all .doc files
+    $docFiles = Get-ChildItem -Path $docDir -Filter "*.doc" -Recurse -File
+}
 
 # Show the number of files found
 $totalFiles = $docFiles.Count
-Write-Host "Found $totalFiles .doc files in $SourceDir directory and its subdirectories" -ForegroundColor Yellow
+if ($SourceFiles) {
+    Write-Host "Found $totalFiles .doc files from specified source files" -ForegroundColor Yellow
+}
+else {
+    Write-Host "Found $totalFiles .doc files in $SourceDir directory and its subdirectories" -ForegroundColor Yellow
+}
 
 # Create a log file to record conversion results
 $logFile = Join-Path -Path $scriptPath -ChildPath "DocConversion.log"
 "Conversion started at $(Get-Date)" | Out-File -FilePath $logFile
-"Parameters: SourceDir=$SourceDir, DeleteOriginal=$DeleteOriginal, Backup=$Backup, Silent=$Silent" | Out-File -FilePath $logFile -Append
+"Parameters: SourceDir=$SourceDir, SourceFiles=$($SourceFiles -join ','), DeleteOriginal=$DeleteOriginal, Backup=$Backup, Silent=$Silent" | Out-File -FilePath $logFile -Append
 
 # Iterate through each .doc file for conversion
 foreach ($file in $docFiles) {
