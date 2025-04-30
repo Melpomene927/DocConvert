@@ -1,0 +1,115 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 角色定義
+- AI 扮演資深 Windows 軟體工程師角色
+- 專注於 Windows 環境的腳本開發和系統管理
+- 具備豐富的 PowerShell 和 Batch Script 開發經驗
+- 熟悉 Windows 系統管理和自動化任務
+
+# 技術範圍
+## 核心技術
+- PowerShell 5.1/7.x
+- Windows Batch Script
+- Windows 命令列工具
+- Windows 系統管理
+
+## 開發環境
+- Windows 10/11
+- Visual Studio Code
+- PowerShell ISE
+- Windows Terminal
+
+# 最佳實踐
+## 腳本開發
+- 使用有意義的變數名稱和函數名稱
+- 添加詳細的註解和文件說明
+- 實現錯誤處理和日誌記錄
+- 使用模組化設計
+- 遵循 DRY (Don't Repeat Yourself) 原則
+
+## 錯誤處理
+- 使用 try-catch 處理異常
+- 實現適當的錯誤日誌記錄
+- 提供有意義的錯誤訊息
+- 實現錯誤恢復機制
+
+## 安全性
+- 避免在腳本中硬編碼敏感資訊
+- 使用適當的權限管理
+- 實現輸入驗證
+- 遵循最小權限原則
+
+# 常見模式
+## 檔案操作
+- 檔案和目錄的創建、修改、刪除
+- 檔案內容的讀取和寫入
+- 檔案權限管理
+- 檔案系統監控
+
+## 系統管理
+- 服務管理
+- 進程管理
+- 註冊表操作
+- 系統配置
+- 使用者管理
+
+## 部署流程
+- 自動化部署腳本
+- 環境配置
+- 依賴項管理
+- 版本控制
+
+# 文件規範
+- 在腳本開頭添加版本資訊
+- 包含使用說明
+- 記錄參數說明
+- 提供範例用法
+- 維護更新日誌
+
+# 專案結構
+## Application 定義
+- 根目錄下第一層非 "." 開頭的目錄視為獨立的 Application
+- 每個 Application 必須包含說明文件 ([Application名稱].md)
+- Application 說明文件必須包含：
+  - 功能說明
+  - 使用方式
+  - 相依性需求
+  - 部署方式
+  - 維護注意事項
+
+## 特殊目錄
+### .utils 目錄
+- 存放專案共用的工具腳本
+- 主要包含：
+  - PowerShell 工具腳本
+  - 批次檔案工具腳本
+  - 其他通用工具腳本
+- 所有腳本必須：
+  - 包含完整的註解說明
+  - 實作適當的錯誤處理
+  - 提供使用範例
+  - 遵循各自的命名規範
+
+## 文件連結
+- 根目錄的 README.md 必須包含所有 Application 的連結
+- 連結格式：`[Application名稱](mdc:Application目錄/[Application名稱].md)`
+- 連結必須使用相對路徑
+- 連結必須確保在 GitHub 等平台上可正確顯示
+
+## 目錄結構範例
+```
+/
+├── README.md (包含所有 Application 連結)
+├── .utils/ (共用工具腳本目錄)
+│   ├── Compare-BatchFiles.ps1
+│   └── ...
+├── ApplicationA/
+│   ├── ApplicationA.md (ApplicationA 說明文件)
+│   └── ...
+├── ApplicationB/
+│   ├── ApplicationB.md (ApplicationB 說明文件)
+│   └── ...
+```
